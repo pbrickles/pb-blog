@@ -1,21 +1,18 @@
-import type { Post } from '$lib/types'
+import type { Post, PostsGlobPath } from '$lib/types'
 import { removeUndefined } from '$lib/helpers/remove-undefined'
 
-export async function getPosts() {
-
-	const paths = import.meta.glob('/src/posts/*.md', {eager: true})
-
+export async function getPosts(paths: Record<string, PostsGlobPath>): Promise<Post[]> {
   const posts = Object.keys(paths).map((path) => {
     const file = paths[path]
     const slug = path.split('/').at(-1)?.replace('.md', '')
     if (file && typeof file === 'object' && 'metadata' in file && slug) {
-      const metadata = file.metadata as Omit<Post, 'slug'>
-      return { ...metadata, slug } satisfies Post
+      const metadata = file.metadata
+      return { ...metadata, slug }
     }
   }).filter(removeUndefined)
 
 
-	const sortedPosts = posts.sort((first, second) =>
+	const sortedPosts: Post[] = posts.sort((first, second) =>
     new Date(second.date).getTime() - new Date(first.date).getTime()
 	)
 
